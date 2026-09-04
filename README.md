@@ -3,7 +3,7 @@
 An advanced, responsive web application designed to convert raw text and dragged files into interactive, organized checklists with customizable prefix formats and state retention.
 
 ## 🌐 Live Website
-[https://zeroid-san.github.io/ONLINE-NOTE-APP/](https://zeroid-san.github.io/ONLINE-NOTE-APP/)
+[https://zeroid-san.github.io/ONLINE-NOTE-APP/](https://oenote.github.io/e/)
 
 ---
 
