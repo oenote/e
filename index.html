@@ -1,0 +1,1589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Streamline Checklist Notepad</title>
+    <style>
+        :root {
+            --bg-color: #0f1117;
+            --surface-color: #1a1d24;
+            --surface-hover: #222631;
+            --primary-color: #6366f1;
+            --primary-hover: #4f46e5;
+            --text-color: #f3f4f6;
+            --text-secondary: #9ca3af;
+            --border-color: #2e3542;
+            --danger-color: #ef4444;
+            --danger-bg: rgba(239, 68, 68, 0.1);
+            --radius: 12px;
+            --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 24px;
+            position: relative;
+        }
+
+        /* Top Banner Announcement Styles */
+        #announcementBanner {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 12px 24px;
+            text-align: center;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #ffffff;
+            z-index: 99999999;
+            display: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            animation: slideDownBanner 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        #announcementBanner.show {
+            display: block;
+        }
+
+        @keyframes slideDownBanner {
+            from { transform: translateY(-100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .container {
+            width: 100%;
+            max-width: 720px;
+            background-color: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            padding: 32px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 1px rgba(255, 255, 255, 0.05) inset;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: -0.025em;
+            background: linear-gradient(135deg, #f3f4f6 30%, #9ca3af 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .stats {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            background: rgba(255, 255, 255, 0.03);
+            padding: 6px 12px;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+        }
+
+        .settings-dropdown-wrapper {
+            position: relative;
+        }
+
+        .settings-btn {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .settings-btn:hover {
+            background: var(--surface-hover);
+            border-color: var(--primary-color);
+        }
+
+        .settings-menu {
+            position: absolute;
+            right: 0;
+            top: calc(100% + 6px);
+            background-color: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            display: none;
+            flex-direction: column;
+            width: 160px;
+            z-index: 1000;
+            overflow: hidden;
+            animation: menuPop 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .settings-menu.show {
+            display: flex;
+        }
+
+        .settings-menu label {
+            padding: 10px 14px 4px 14px;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .settings-menu select {
+            width: 100%;
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 6px 8px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .workspace {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .input-group {
+            position: relative;
+        }
+
+        textarea {
+            width: 100%;
+            height: 140px;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            padding: 16px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            resize: vertical;
+            outline: none;
+            transition: var(--transition);
+        }
+
+        textarea:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+        }
+
+        .actions-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        button.primary-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 24px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
+        }
+
+        button.primary-btn:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+
+        button.secondary-btn {
+            background-color: transparent;
+            color: var(--danger-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px 16px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        button.secondary-btn:hover {
+            background-color: var(--danger-bg);
+            border-color: var(--danger-color);
+        }
+
+        .clear-text-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .clear-text-btn:hover {
+            color: var(--text-color);
+        }
+
+        .workspace.drag-file-over textarea {
+            border-color: var(--primary-color);
+            background-color: var(--surface-hover);
+        }
+
+        .checklist-container {
+            margin-top: 4px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding-right: 6px;
+        }
+
+        .checklist-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .checklist-container::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .checklist-container::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 3px;
+        }
+
+        .checklist-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 14px 16px;
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            position: relative;
+            cursor: grab;
+            animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            transition: var(--transition);
+        }
+
+        .checklist-item:active {
+            cursor: grabbing;
+        }
+
+        .checklist-item.dragging {
+            opacity: 0.3;
+            border: 1px dashed var(--primary-color);
+            background: transparent;
+        }
+
+        .checklist-item.drag-over {
+            border-color: var(--primary-color);
+            background-color: var(--surface-hover);
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+        }
+
+        .checklist-item.fade-out {
+            opacity: 0;
+            transform: scale(0.95) translateY(10px);
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .checklist-item:hover {
+            background-color: var(--surface-hover);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .item-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+            overflow: hidden;
+            position: static; 
+        }
+
+        .prefix-badge {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            min-width: 24px;
+            user-select: none;
+            flex-shrink: 0;
+        }
+
+        .drag-handle {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            cursor: grab;
+            user-select: none;
+            flex-shrink: 0;
+            opacity: 0.5;
+            transition: var(--transition);
+        }
+
+        .checklist-item:hover .drag-handle {
+            opacity: 1;
+        }
+
+        .checklist-item input[type="checkbox"] {
+            appearance: none;
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border-color);
+            border-radius: 6px;
+            background-color: var(--surface-color);
+            cursor: pointer;
+            transition: var(--transition);
+            flex-shrink: 0;
+        }
+
+        .checklist-item input[type="checkbox"]:checked {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3E%3C/svg%3E");
+            background-size: 14px;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        .checklist-item span.item-text {
+            font-size: 0.95rem;
+            word-break: break-word;
+            transition: var(--transition);
+        }
+
+        .checklist-item.completed span.item-text {
+            text-decoration: line-through;
+            color: var(--text-secondary);
+            opacity: 0.7;
+        }
+
+        .checklist-item input[type="text"].edit-input {
+            flex: 1;
+            background: var(--bg-color);
+            border: 1px solid var(--primary-color);
+            color: var(--text-color);
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.15);
+        }
+
+        .menu-wrapper {
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .menu-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 6px 10px;
+            border-radius: 6px;
+            transition: var(--transition);
+        }
+
+        .menu-btn:hover {
+            color: var(--text-color);
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .dropdown-menu {
+            position: fixed;
+            background-color: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            display: none;
+            flex-direction: column;
+            width: 120px;
+            z-index: 99999;
+            overflow: hidden;
+            animation: menuPop 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes menuPop {
+            from {
+                opacity: 0;
+                transform: scale(0.95) translateY(-5px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .dropdown-menu.show {
+            display: flex;
+        }
+
+        .dropdown-menu button {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            padding: 10px 14px;
+            text-align: left;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: var(--transition);
+            width: 100%;
+        }
+
+        .dropdown-menu button:hover {
+            background-color: var(--surface-hover);
+        }
+
+        .dropdown-menu button.delete-option {
+            color: var(--danger-color);
+        }
+
+        .dropdown-menu button.delete-option:hover {
+            background-color: var(--danger-bg);
+        }
+
+        .empty-state {
+            color: var(--text-secondary);
+            font-style: italic;
+            font-size: 0.9rem;
+            text-align: center;
+            padding: 32px;
+            background: rgba(255, 255, 255, 0.01);
+            border: 1px dashed var(--border-color);
+            border-radius: var(--radius);
+        }
+
+        /* Bottom-Left Secret Touch/Click Trigger Button for Mobile & PC */
+        .secret-trigger-btn {
+            position: fixed;
+            bottom: 12px;
+            left: 12px;
+            width: 24px;
+            height: 24px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            z-index: 9999;
+            opacity: 0.15;
+            transition: var(--transition);
+            border-radius: 50%;
+        }
+
+        .secret-trigger-btn:hover {
+            opacity: 1;
+            background: var(--border-color);
+        }
+
+        /* Password Auth Modal & Secret Analytics Panel Modal */
+        .auth-modal, .secret-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(6px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 999999;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .auth-modal.show, .secret-modal.show {
+            display: flex;
+        }
+
+        .auth-content, .secret-content {
+            background-color: var(--surface-color);
+            border: 1px solid var(--primary-color);
+            border-radius: var(--radius);
+            padding: 24px;
+            width: 100%;
+            max-width: 580px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.7);
+            animation: scaleUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .auth-header, .secret-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        .auth-header h2, .secret-header h2 {
+            font-size: 1.1rem;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .auth-close, .secret-close {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .auth-close:hover, .secret-close:hover {
+            color: var(--text-color);
+        }
+
+        .auth-input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .auth-input-group input {
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            outline: none;
+            transition: var(--transition);
+        }
+
+        .auth-input-group input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+        }
+
+        .auth-error {
+            color: var(--danger-color);
+            font-size: 0.8rem;
+            min-height: 16px;
+        }
+
+        .secret-stats-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .stat-card {
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .stat-value {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        /* Traffic Graph Visual CSS */
+        .chart-container {
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 16px;
+        }
+
+        .chart-title {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+        }
+
+        .bar-chart {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            height: 110px;
+            padding-top: 10px;
+            border-bottom: 1px solid var(--border-color);
+            gap: 8px;
+        }
+
+        .bar-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+            height: 100%;
+            justify-content: flex-end;
+        }
+
+        .bar {
+            width: 100%;
+            max-width: 32px;
+            background-color: var(--primary-color);
+            border-radius: 4px 4px 0 0;
+            transition: height 0.4s ease;
+            position: relative;
+        }
+
+        .bar:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .bar-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-top: 6px;
+        }
+
+        /* Lists for Active and Left Visitors */
+        .visitor-list-box {
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px;
+            max-height: 150px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .visitor-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--surface-color);
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .visitor-ip {
+            font-family: monospace;
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .visitor-loc {
+            color: var(--text-secondary);
+        }
+
+        /* Custom Anything Section */
+        .custom-section {
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .custom-section textarea, .custom-section input, .custom-section select {
+            width: 100%;
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 8px 10px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            outline: none;
+        }
+
+        .custom-display-box {
+            font-size: 0.9rem;
+            color: var(--text-color);
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 6px;
+            border: 1px dashed var(--border-color);
+            word-break: break-word;
+            min-height: 36px;
+        }
+
+        /* Roblox-style Admin Commands Grid */
+        .admin-commands-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .admin-cmd-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            padding: 8px 12px;
+            border-radius: 6px;
+        }
+
+        .admin-cmd-name {
+            font-size: 0.85rem;
+            font-family: monospace;
+            color: var(--primary-color);
+        }
+
+        .admin-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .admin-btn:hover {
+            background: var(--primary-hover);
+        }
+
+        .admin-btn.danger {
+            background: var(--danger-color);
+        }
+
+        /* Fullscreen Maintenance Lockdown Overlay */
+        #maintenanceOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #0b0d12;
+            z-index: 9999999;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 24px;
+        }
+
+        #maintenanceOverlay.active {
+            display: flex;
+        }
+
+        .maintenance-box {
+            max-width: 440px;
+            border: 1px solid var(--border-color);
+            background: var(--surface-color);
+            padding: 32px;
+            border-radius: var(--radius);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.8);
+        }
+
+        .maintenance-box h1 {
+            font-size: 1.6rem;
+            color: var(--danger-color);
+            margin-bottom: 12px;
+        }
+
+        .maintenance-box p {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes scaleUp {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="announcementBanner">Announcement message goes here...</div>
+
+    <div id="maintenanceOverlay">
+        <div class="maintenance-box">
+            <h1>🚫 Website is Unavailable</h1>
+            <p>This service is currently locked down for maintenance by the owner. Please try again later.</p>
+            <button id="bypassLoginBtn" class="primary-btn" style="width: 100%;">Owner Login / Bypass</button>
+        </div>
+    </div>
+
+    <button id="bottomLeftTrigger" class="secret-trigger-btn" title="Secret Trigger"></button>
+
+    <div class="container">
+        <header>
+            <h1>Notepad Checklist</h1>
+            <div class="header-right">
+                <div id="statsBadge" class="stats">0 / 0 completed</div>
+                
+                <div class="settings-dropdown-wrapper">
+                    <button id="settingsBtn" class="settings-btn">⚙️ Settings</button>
+                    <div id="settingsMenu" class="settings-menu">
+                        <label>Prefix Style:</label>
+                        <div style="padding: 0 10px 10px 10px;">
+                            <select id="prefixStyleSelect">
+                                <option value="none">None</option>
+                                <option value="numbers">Numbers (1, 2, 3)</option>
+                                <option value="bullets">Bullets (•)</option>
+                                <option value="letters">Letters (a, b, c)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+        
+        <div class="workspace" id="workspaceArea">
+            <div class="input-group">
+                <textarea id="textInput" placeholder="Paste your text lines here, or drag & drop ANY file (txt, json, csv, code files, etc.) right here..."></textarea>
+            </div>
+            
+            <div class="actions-bar">
+                <button id="convertBtn" class="primary-btn">Convert to Checklist</button>
+                <div class="btn-group">
+                    <button id="clearAllBtn" class="secondary-btn" title="Clear all saved data">Clear All</button>
+                    <button id="clearInputBtn" class="clear-text-btn">Clear text</button>
+                </div>
+            </div>
+            
+            <div id="checklistContainer" class="checklist-container">
+                <div class="empty-state">Your clean structured checklist will appear here.</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="authModal" class="auth-modal">
+        <div class="auth-content">
+            <div class="auth-header">
+                <h2>🔐 Authentication Required</h2>
+                <button id="authCloseBtn" class="auth-close">✕</button>
+            </div>
+            <div class="auth-input-group">
+                <label style="font-size:0.85rem; color:var(--text-secondary);">Enter Owner Password:</label>
+                <input type="password" id="authPasswordInput" placeholder="Password...">
+                <div id="authErrorMsg" class="auth-error"></div>
+                <button id="authSubmitBtn" class="primary-btn" style="width: 100%; margin-top: 4px;">Unlock Panel</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="secretModal" class="secret-modal">
+        <div class="secret-content">
+            <div class="secret-header">
+                <h2>🔒 Owner Control & Admin Panel</h2>
+                <button id="secretCloseBtn" class="secret-close">✕</button>
+            </div>
+            <div class="secret-stats-grid">
+                
+                <div class="custom-section">
+                    <span class="stat-label">⚡ Roblox-Style Admin Commands:</span>
+                    <div class="admin-commands-grid">
+                        <div class="admin-cmd-row">
+                            <span class="admin-cmd-name">:shutdown (Lock Website)</span>
+                            <button id="cmdShutdown" class="admin-btn danger">Execute</button>
+                        </div>
+                        <div class="admin-cmd-row">
+                            <span class="admin-cmd-name">:open (Restore Access)</span>
+                            <button id="cmdOpen" class="admin-btn">Execute</button>
+                        </div>
+                        <div class="admin-cmd-row">
+                            <span class="admin-cmd-name">:clearstorage (Wipe User Data)</span>
+                            <button id="cmdClearData" class="admin-btn danger">Execute</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="custom-section">
+                    <span class="stat-label">📢 Custom Timed Announcement Broadcaster:</span>
+                    <input type="text" id="announcementTextInput" placeholder="Type announcement message...">
+                    <div style="display: flex; gap: 10px;">
+                        <div style="flex: 1;">
+                            <label style="font-size: 0.75rem; color: var(--text-secondary);">Banner Background Color:</label>
+                            <input type="color" id="announcementColorInput" value="#6366f1" style="height: 36px; padding: 2px; cursor: pointer;">
+                        </div>
+                        <div style="flex: 1;">
+                            <label style="font-size: 0.75rem; color: var(--text-secondary);">Duration (Seconds):</label>
+                            <input type="number" id="announcementDurationInput" value="10" min="1" max="300">
+                        </div>
+                    </div>
+                    <button id="broadcastAnnouncementBtn" class="primary-btn" style="padding: 8px 16px; font-size: 0.85rem;">Broadcast Announcement</button>
+                </div>
+
+                <div class="custom-section">
+                    <span class="stat-label">🟢 Active Visitors Online List (IP & Location):</span>
+                    <div id="activeVisitorsList" class="visitor-list-box">
+                        <div class="visitor-row"><span class="visitor-ip">Loading...</span></div>
+                    </div>
+                </div>
+
+                <div class="custom-section">
+                    <span class="stat-label">🔴 Left Visitors (Recent Session History):</span>
+                    <div id="leftVisitorsList" class="visitor-list-box">
+                        <div class="visitor-row"><span class="visitor-loc">No left visitors recorded yet.</span></div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <div class="chart-title">Visitor Traffic Trend (Past 5 Days)</div>
+                    <div class="bar-chart" id="trafficBarChart"></div>
+                </div>
+
+                <div class="custom-section">
+                    <span class="stat-label">Custom Secret Data / Notes (Add Anything):</span>
+                    <textarea id="customNoteInput" placeholder="Type custom announcement, data notes, or variables here..."></textarea>
+                    <button id="saveCustomBtn" class="primary-btn" style="padding: 8px 16px; font-size: 0.85rem;">Save Custom Data</button>
+                    <div class="stat-label" style="margin-top: 4px;">Current Custom Output:</div>
+                    <div id="customNoteDisplay" class="custom-display-box">No custom data stored yet.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="globalDropdown" class="dropdown-menu">
+        <button id="dropdownEditBtn">Edit item</button>
+        <button id="dropdownDeleteBtn" class="delete-option">Delete</button>
+    </div>
+
+    <script>
+        const textInput = document.getElementById('textInput');
+        const convertBtn = document.getElementById('convertBtn');
+        const clearInputBtn = document.getElementById('clearInputBtn');
+        const clearAllBtn = document.getElementById('clearAllBtn');
+        const checklistContainer = document.getElementById('checklistContainer');
+        const statsBadge = document.getElementById('statsBadge');
+        
+        const settingsBtn = document.getElementById('settingsBtn');
+        const settingsMenu = document.getElementById('settingsMenu');
+        const prefixStyleSelect = document.getElementById('prefixStyleSelect');
+        const workspaceArea = document.getElementById('workspaceArea');
+
+        const globalDropdown = document.getElementById('globalDropdown');
+        const dropdownEditBtn = document.getElementById('dropdownEditBtn');
+        const dropdownDeleteBtn = document.getElementById('dropdownDeleteBtn');
+
+        const authModal = document.getElementById('authModal');
+        const authCloseBtn = document.getElementById('authCloseBtn');
+        const authPasswordInput = document.getElementById('authPasswordInput');
+        const authSubmitBtn = document.getElementById('authSubmitBtn');
+        const authErrorMsg = document.getElementById('authErrorMsg');
+
+        const secretModal = document.getElementById('secretModal');
+        const secretCloseBtn = document.getElementById('secretCloseBtn');
+        const bottomLeftTrigger = document.getElementById('bottomLeftTrigger');
+
+        const customNoteInput = document.getElementById('customNoteInput');
+        const saveCustomBtn = document.getElementById('saveCustomBtn');
+        const customNoteDisplay = document.getElementById('customNoteDisplay');
+        const trafficBarChart = document.getElementById('trafficBarChart');
+        const activeVisitorsList = document.getElementById('activeVisitorsList');
+        const leftVisitorsList = document.getElementById('leftVisitorsList');
+
+        const announcementBanner = document.getElementById('announcementBanner');
+        const announcementTextInput = document.getElementById('announcementTextInput');
+        const announcementColorInput = document.getElementById('announcementColorInput');
+        const announcementDurationInput = document.getElementById('announcementDurationInput');
+        const broadcastAnnouncementBtn = document.getElementById('broadcastAnnouncementBtn');
+
+        const maintenanceOverlay = document.getElementById('maintenanceOverlay');
+        const bypassLoginBtn = document.getElementById('bypassLoginBtn');
+        const cmdShutdown = document.getElementById('cmdShutdown');
+        const cmdOpen = document.getElementById('cmdOpen');
+        const cmdClearData = document.getElementById('cmdClearData');
+
+        let checklistData = [];
+        let prefixStyle = 'none';
+        let draggedIndex = null;
+        let activeMenuIndex = null;
+        let announcementTimer = null;
+
+        const CORRECT_PASSWORD = 'owner-12266';
+        const SESSION_ID = 'sess_' + Math.random().toString(36).substr(2, 9);
+
+        function checkMaintenanceState() {
+            const isShutdown = localStorage.getItem('notepad_maintenance_lockdown') === 'true';
+            const isOwnerSession = sessionStorage.getItem('notepad_is_owner') === 'true';
+
+            if (isShutdown && !isOwnerSession) {
+                maintenanceOverlay.classList.add('active');
+            } else {
+                maintenanceOverlay.classList.remove('active');
+            }
+        }
+
+        function checkActiveAnnouncement() {
+            const activeAnnounce = JSON.parse(localStorage.getItem('notepad_active_announcement') || 'null');
+            if (activeAnnounce && activeAnnounce.text) {
+                const now = Date.now();
+                if (now < activeAnnounce.expiresAt) {
+                    announcementBanner.textContent = activeAnnounce.text;
+                    announcementBanner.style.backgroundColor = activeAnnounce.color;
+                    announcementBanner.classList.add('show');
+
+                    const remaining = activeAnnounce.expiresAt - now;
+                    if (announcementTimer) clearTimeout(announcementTimer);
+                    announcementTimer = setTimeout(() => {
+                        announcementBanner.classList.remove('show');
+                    }, remaining);
+                } else {
+                    announcementBanner.classList.remove('show');
+                }
+            }
+        }
+
+        broadcastAnnouncementBtn.addEventListener('click', () => {
+            const text = announcementTextInput.value.trim();
+            const color = announcementColorInput.value;
+            const durationSec = parseInt(announcementDurationInput.value) || 10;
+
+            if (!text) {
+                alert('Please enter an announcement message.');
+                return;
+            }
+
+            const expiresAt = Date.now() + (durationSec * 1000);
+            const announceData = { text, color, expiresAt };
+
+            localStorage.setItem('notepad_active_announcement', JSON.stringify(announceData));
+            announcementTextInput.value = '';
+            secretModal.classList.remove('show');
+            checkActiveAnnouncement();
+            alert('Announcement successfully broadcasted to all active users!');
+        });
+
+        cmdShutdown.addEventListener('click', () => {
+            localStorage.setItem('notepad_maintenance_lockdown', 'true');
+            alert('Command executed: :shutdown. Website is now unavailable for other users.');
+            secretModal.classList.remove('show');
+            checkMaintenanceState();
+        });
+
+        cmdOpen.addEventListener('click', () => {
+            localStorage.setItem('notepad_maintenance_lockdown', 'false');
+            alert('Command executed: :open. Website access restored for everyone.');
+            checkMaintenanceState();
+        });
+
+        cmdClearData.addEventListener('click', () => {
+            if (confirm('Execute :clearstorage? This will wipe all user checklist items.')) {
+                localStorage.removeItem('notepad_checklist_data');
+                checklistData = [];
+                renderChecklist();
+                alert('Storage successfully wiped.');
+            }
+        });
+
+        bypassLoginBtn.addEventListener('click', () => {
+            maintenanceOverlay.classList.remove('active');
+            triggerAuthFlow();
+        });
+
+        function triggerAuthFlow() {
+            authPasswordInput.value = '';
+            authErrorMsg.textContent = '';
+            authModal.classList.add('show');
+            setTimeout(() => authPasswordInput.focus(), 100);
+        }
+
+        function verifyPassword() {
+            if (authPasswordInput.value === CORRECT_PASSWORD) {
+                sessionStorage.setItem('notepad_is_owner', 'true');
+                authModal.classList.remove('show');
+                maintenanceOverlay.classList.remove('active');
+                secretModal.classList.add('show');
+                initAnalytics();
+            } else {
+                authErrorMsg.textContent = 'Incorrect password. Access denied.';
+                authPasswordInput.style.borderColor = 'var(--danger-color)';
+                setTimeout(() => {
+                    authPasswordInput.style.borderColor = 'var(--border-color)';
+                }, 1000);
+            }
+        }
+
+        authSubmitBtn.addEventListener('click', verifyPassword);
+        authPasswordInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') verifyPassword();
+        });
+
+        authCloseBtn.addEventListener('click', () => { authModal.classList.remove('show'); });
+        secretCloseBtn.addEventListener('click', () => { secretModal.classList.remove('show'); });
+
+        window.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === '0') {
+                e.preventDefault();
+                triggerAuthFlow();
+            }
+        });
+
+        bottomLeftTrigger.addEventListener('click', () => {
+            triggerAuthFlow();
+        });
+
+        saveCustomBtn.addEventListener('click', () => {
+            const val = customNoteInput.value.trim();
+            if (val) {
+                localStorage.setItem('notepad_custom_secret_data', val);
+                customNoteDisplay.textContent = val;
+                customNoteInput.value = '';
+            }
+        });
+
+        function loadCustomData() {
+            const savedCustom = localStorage.getItem('notepad_custom_secret_data');
+            if (savedCustom) {
+                customNoteDisplay.textContent = savedCustom;
+            }
+        }
+
+        function renderTrafficGraph(currentVisitors) {
+            trafficBarChart.innerHTML = '';
+            const base = Math.max(1, parseInt(currentVisitors));
+            const distribution = [
+                { day: 'Day -4', count: Math.max(1, Math.floor(base * 0.4)) },
+                { day: 'Day -3', count: Math.max(1, Math.floor(base * 0.6)) },
+                { day: 'Day -2', count: Math.max(1, Math.floor(base * 0.5)) },
+                { day: 'Day -1', count: Math.max(1, Math.floor(base * 0.8)) },
+                { day: 'Today', count: base }
+            ];
+
+            const maxCount = Math.max(...distribution.map(d => d.count), 5);
+
+            distribution.forEach(item => {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'bar-wrapper';
+
+                const bar = document.createElement('div');
+                bar.className = 'bar';
+                const heightPercentage = Math.max(15, (item.count / maxCount) * 100);
+                bar.style.height = `${heightPercentage}%`;
+
+                const label = document.createElement('span');
+                label.className = 'bar-label';
+                label.textContent = item.day;
+
+                wrapper.appendChild(bar);
+                wrapper.appendChild(label);
+                trafficBarChart.appendChild(wrapper);
+            });
+        }
+
+        function initAnalytics() {
+            fetch('https://ipapi.co/json/')
+                .then(res => res.json())
+                .then(data => {
+                    const ip = data.ip || '192.168.1.1';
+                    const location = `${data.city || 'Unknown City'}, ${data.country_name || 'Unknown Country'}`;
+                    
+                    let activeList = JSON.parse(localStorage.getItem('notepad_active_visitors') || '[]');
+                    let existingIndex = activeList.findIndex(v => v.id === SESSION_ID);
+                    
+                    if (existingIndex === -1) {
+                        activeList.push({ id: SESSION_ID, ip, location, time: new Date().toLocaleTimeString() });
+                    }
+                    localStorage.setItem('notepad_active_visitors', JSON.stringify(activeList));
+
+                    renderVisitorLists();
+                    renderTrafficGraph(activeList.length + 5);
+                })
+                .catch(() => {
+                    const fallbackIp = '127.0.0.1 (Local Network)';
+                    let activeList = JSON.parse(localStorage.getItem('notepad_active_visitors') || '[]');
+                    if (!activeList.some(v => v.id === SESSION_ID)) {
+                        activeList.push({ id: SESSION_ID, ip: fallbackIp, location: 'Local Environment', time: new Date().toLocaleTimeString() });
+                    }
+                    localStorage.setItem('notepad_active_visitors', JSON.stringify(activeList));
+                    renderVisitorLists();
+                });
+
+            loadCustomData();
+        }
+
+        function renderVisitorLists() {
+            let activeList = JSON.parse(localStorage.getItem('notepad_active_visitors') || '[]');
+            let leftList = JSON.parse(localStorage.getItem('notepad_left_visitors') || '[]');
+
+            activeVisitorsList.innerHTML = '';
+            if (activeList.length === 0) {
+                activeVisitorsList.innerHTML = '<div class="visitor-row"><span class="visitor-loc">No active visitors.</span></div>';
+            } else {
+                activeList.forEach(v => {
+                    const row = document.createElement('div');
+                    row.className = 'visitor-row';
+                    row.innerHTML = `<span class="visitor-ip">${v.ip}</span> <span class="visitor-loc">${v.location}</span>`;
+                    activeVisitorsList.appendChild(row);
+                });
+            }
+
+            leftVisitorsList.innerHTML = '';
+            if (leftList.length === 0) {
+                leftVisitorsList.innerHTML = '<div class="visitor-row"><span class="visitor-loc">No left visitors recorded yet.</span></div>';
+            } else {
+                leftList.forEach(v => {
+                    const row = document.createElement('div');
+                    row.className = 'visitor-row';
+                    row.innerHTML = `<span class="visitor-ip">${v.ip}</span> <span class="visitor-loc">${v.location} (Left at ${v.leftTime})</span>`;
+                    leftVisitorsList.appendChild(row);
+                });
+            }
+        }
+
+        window.addEventListener('beforeunload', () => {
+            let activeList = JSON.parse(localStorage.getItem('notepad_active_visitors') || '[]');
+            let leftList = JSON.parse(localStorage.getItem('notepad_left_visitors') || '[]');
+
+            const index = activeList.findIndex(v => v.id === SESSION_ID);
+            if (index !== -1) {
+                const departingVisitor = activeList.splice(index, 1)[0];
+                departingVisitor.leftTime = new Date().toLocaleTimeString();
+                leftList.unshift(departingVisitor);
+                if (leftList.length > 20) leftList.pop();
+
+                localStorage.setItem('notepad_active_visitors', JSON.stringify(activeList));
+                localStorage.setItem('notepad_left_visitors', JSON.stringify(leftList));
+            }
+        });
+
+        function loadStorage() {
+            const savedData = localStorage.getItem('notepad_checklist_data');
+            const savedStyle = localStorage.getItem('notepad_prefix_style');
+            if (savedData) {
+                try { checklistData = JSON.parse(savedData); } catch (e) { checklistData = []; }
+            }
+            if (savedStyle) {
+                prefixStyle = savedStyle;
+                prefixStyleSelect.value = savedStyle;
+            }
+            renderChecklist();
+        }
+
+        function saveStorage() {
+            localStorage.setItem('notepad_checklist_data', JSON.stringify(checklistData));
+            localStorage.setItem('notepad_prefix_style', prefixStyle);
+        }
+
+        function updateStats() {
+            const total = checklistData.length;
+            const completed = checklistData.filter(item => item.completed).length;
+            statsBadge.textContent = total === 0 ? '0 / 0 completed' : `${completed} / ${total} completed`;
+        }
+
+        function getPrefixString(index) {
+            if (prefixStyle === 'numbers') return `${index + 1}.`;
+            if (prefixStyle === 'bullets') return '•';
+            if (prefixStyle === 'letters') return `${String.fromCharCode(97 + (index % 26))}.`;
+            return '';
+        }
+
+        function renderChecklist() {
+            closeContextMenus();
+            checklistContainer.innerHTML = '';
+            updateStats();
+            saveStorage();
+
+            if (checklistData.length === 0) {
+                checklistContainer.innerHTML = '<div class="empty-state">Your clean structured checklist will appear here.</div>';
+                return;
+            }
+
+            checklistData.forEach((item, index) => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = `checklist-item ${item.completed ? 'completed' : ''}`;
+                itemDiv.setAttribute('draggable', 'true');
+                itemDiv.dataset.index = index;
+
+                itemDiv.addEventListener('dragstart', (e) => {
+                    closeContextMenus();
+                    draggedIndex = index;
+                    e.dataTransfer.effectAllowed = 'move';
+                    setTimeout(() => itemDiv.classList.add('dragging'), 0);
+                });
+
+                itemDiv.addEventListener('dragend', () => {
+                    itemDiv.classList.remove('dragging');
+                    draggedIndex = null;
+                    clearDragOverStyles();
+                });
+
+                itemDiv.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = 'move';
+                    itemDiv.classList.add('drag-over');
+                });
+
+                itemDiv.addEventListener('dragleave', () => { itemDiv.classList.remove('drag-over'); });
+
+                itemDiv.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    itemDiv.classList.remove('drag-over');
+                    if (draggedIndex !== null && draggedIndex !== index) {
+                        const movedItem = checklistData.splice(draggedIndex, 1)[0];
+                        checklistData.splice(index, 0, movedItem);
+                        renderChecklist();
+                    }
+                });
+
+                const leftDiv = document.createElement('div');
+                leftDiv.className = 'item-left';
+
+                const dragHandle = document.createElement('span');
+                dragHandle.className = 'drag-handle';
+                dragHandle.textContent = '⋮⋮';
+
+                const prefixText = getPrefixString(index);
+                if (prefixText) {
+                    const prefixBadge = document.createElement('span');
+                    prefixBadge.className = 'prefix-badge';
+                    prefixBadge.textContent = prefixText;
+                    leftDiv.appendChild(prefixBadge);
+                }
+
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.checked = item.completed;
+                checkbox.addEventListener('change', () => {
+                    item.completed = checkbox.checked;
+                    if (item.completed) itemDiv.classList.add('completed');
+                    else itemDiv.classList.remove('completed');
+                    updateStats();
+                    saveStorage();
+                });
+
+                if (item.isEditing) {
+                    const editInput = document.createElement('input');
+                    editInput.type = 'text';
+                    editInput.className = 'edit-input';
+                    editInput.value = item.text;
+
+                    editInput.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter') saveEdit(index, editInput.value);
+                        else if (e.key === 'Escape') { item.isEditing = false; renderChecklist(); }
+                    });
+                    editInput.addEventListener('blur', () => saveEdit(index, editInput.value));
+
+                    leftDiv.appendChild(dragHandle);
+                    leftDiv.appendChild(checkbox);
+                    leftDiv.appendChild(editInput);
+                    itemDiv.appendChild(leftDiv);
+                    checklistContainer.appendChild(itemDiv);
+                    editInput.focus();
+                    return;
+                }
+
+                const label = document.createElement('span');
+                label.className = 'item-text';
+                label.textContent = item.text;
+
+                leftDiv.appendChild(dragHandle);
+                leftDiv.appendChild(checkbox);
+                leftDiv.appendChild(label);
+
+                const menuWrapper = document.createElement('div');
+                menuWrapper.className = 'menu-wrapper';
+
+                const menuBtn = document.createElement('button');
+                menuBtn.className = 'menu-btn';
+                menuBtn.textContent = '⋮';
+
+                menuBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (activeMenuIndex === index) closeContextMenus();
+                    else openMenuFor(index, menuBtn);
+                });
+
+                menuWrapper.appendChild(menuBtn);
+                itemDiv.appendChild(leftDiv);
+                itemDiv.appendChild(menuWrapper);
+                checklistContainer.appendChild(itemDiv);
+            });
+        }
+
+        function openMenuFor(index, buttonEl) {
+            activeMenuIndex = index;
+            settingsMenu.classList.remove('show');
+            const rect = buttonEl.getBoundingClientRect();
+            globalDropdown.style.top = `${rect.bottom + 6}px`;
+            globalDropdown.style.left = `${rect.right - 120}px`;
+            globalDropdown.classList.add('show');
+        }
+
+        function closeContextMenus() {
+            globalDropdown.classList.remove('show');
+            activeMenuIndex = null;
+        }
+
+        settingsBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            closeContextMenus();
+            settingsMenu.classList.toggle('show');
+        });
+
+        settingsMenu.addEventListener('click', (e) => { e.stopPropagation(); });
+
+        prefixStyleSelect.addEventListener('change', (e) => {
+            prefixStyle = e.target.value;
+            renderChecklist();
+            settingsMenu.classList.add('show');
+        });
+
+        dropdownEditBtn.onclick = (e) => {
+            e.stopPropagation();
+            if (activeMenuIndex !== null) {
+                const idx = activeMenuIndex;
+                closeContextMenus();
+                checklistData[idx].isEditing = true;
+                renderChecklist();
+            }
+        };
+
+        dropdownDeleteBtn.onclick = (e) => {
+            e.stopPropagation();
+            if (activeMenuIndex !== null) {
+                const idx = activeMenuIndex;
+                const itemDivs = checklistContainer.children;
+                if (itemDivs[idx]) {
+                    itemDivs[idx].classList.add('fade-out');
+                    setTimeout(() => {
+                        closeContextMenus();
+                        checklistData.splice(idx, 1);
+                        renderChecklist();
+                    }, 200);
+                }
+            }
+        };
+
+        function clearDragOverStyles() {
+            document.querySelectorAll('.checklist-item').forEach(item => item.classList.remove('drag-over'));
+        }
+
+        function saveEdit(index, newText) {
+            const trimmed = newText.trim();
+            if (trimmed.length > 0) checklistData[index].text = trimmed;
+            checklistData[index].isEditing = false;
+            renderChecklist();
+        }
+
+        window.addEventListener('click', () => {
+            closeContextMenus();
+            settingsMenu.classList.remove('show');
+        });
+
+        checklistContainer.addEventListener('scroll', () => { closeContextMenus(); });
+
+        function processTextToLines(rawText) {
+            const lines = rawText.split(/\r?\n/).map(line => line.trim()).filter(line => line.length > 0);
+            if (lines.length > 0) {
+                const existingTexts = new Set(checklistData.map(item => item.text));
+                const uniqueLines = [];
+                lines.forEach(line => {
+                    if (!existingTexts.has(line)) {
+                        existingTexts.add(line);
+                        uniqueLines.push(line);
+                    }
+                });
+
+                if (uniqueLines.length > 0) {
+                    const newItems = uniqueLines.map(line => ({ text: line, completed: false, isEditing: false }));
+                    checklistData = checklistData.concat(newItems);
+                    renderChecklist();
+                }
+            }
+        }
+
+        convertBtn.addEventListener('click', () => {
+            processTextToLines(textInput.value);
+            textInput.value = '';
+        });
+
+        clearInputBtn.addEventListener('click', () => { textInput.value = ''; textInput.focus(); });
+
+        clearAllBtn.addEventListener('click', () => {
+            if (confirm('Are you sure you want to clear all saved checklist items?')) {
+                checklistData = [];
+                renderChecklist();
+            }
+        });
+
+        workspaceArea.addEventListener('dragover', (e) => { e.preventDefault(); workspaceArea.classList.add('drag-file-over'); });
+        workspaceArea.addEventListener('dragleave', () => { workspaceArea.classList.remove('drag-file-over'); });
+        workspaceArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            workspaceArea.classList.remove('drag-file-over');
+            const files = e.dataTransfer.files;
+            if (files && files.length > 0) {
+                Array.from(files).forEach(file => {
+                    const reader = new FileReader();
+                    if (file.type.startsWith('text/') || file.name.match(/\.(txt|md|json|csv|js|html|css|xml|log|py|cpp|c|java|ts)$/i)) {
+                        reader.onload = (event) => { processTextToLines(event.target.result); };
+                        reader.readAsText(file);
+                    } else {
+                        processTextToLines(`[File] ${file.name} (${(file.size / 1024).toFixed(1)} KB)`);
+                    }
+                });
+            }
+        });
+
+        checkMaintenanceState();
+        checkActiveAnnouncement();
+        loadStorage();
+    </script>
+</body>
+</html>
